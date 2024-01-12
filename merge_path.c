@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define MAX_INT 300024
-#define ARRAY_SIZE 30000
+#define MAX_INT 1000
+#define ARRAY_SIZE 40000 
 
 void print_int_array(int *array, int size) {
   printf("[");
@@ -30,6 +30,7 @@ void simple_sort(int *array, int size) {
       return;
   }
 }
+
 /*
 int *DiagonalIntersection(int *merge_matrix, int diag_number, int size,
                           int rank) {
@@ -66,10 +67,10 @@ int main(int argc, char *argv[]) {
   printf("main... \n");
 
   int rank, size;
-  int merge_matrix[ARRAY_SIZE * ARRAY_SIZE];
-  int array1 = malloc(sizeof(int) * ARRAY_SIZE);
-  int array2 = malloc(sizeof(int) * ARRAY_SIZE);
-  int result = malloc(sizeof(int) * ARRAY_SIZE * 2);
+  char *merge_matrix = malloc(sizeof(char) * ARRAY_SIZE * ARRAY_SIZE);
+  int *array1 = malloc(sizeof(int) * ARRAY_SIZE);
+  int *array2 = malloc(sizeof(int) * ARRAY_SIZE);
+  int *result = malloc(sizeof(int) * ARRAY_SIZE * 2);
   //
   // MPI_INIT
   //
@@ -83,11 +84,12 @@ int main(int argc, char *argv[]) {
 
   int chunk_size = ARRAY_SIZE / size;
   int local_array[chunk_size];
+
   //
   // SEQUENTIAL INITIALIZATION...
   //
   if (rank == 0) {
-    // printf("filling arrays ... \n");
+    printf("array size  = %d\n",ARRAY_SIZE);
 
     for (int i = 0; i < ARRAY_SIZE; i++) {
       array1[i] = rand() % MAX_INT;
@@ -135,8 +137,8 @@ int main(int argc, char *argv[]) {
     printf("before Gather in %f\n", t2 - t1);
   }
   MPI_Gather(&merge_matrix[rank * ARRAY_SIZE * chunk_size],
-             ARRAY_SIZE * chunk_size, MPI_INT, merge_matrix,
-             ARRAY_SIZE * chunk_size, MPI_INT, 0, custom_comm);
+             ARRAY_SIZE * chunk_size, MPI_CHAR, merge_matrix,
+             ARRAY_SIZE * chunk_size, MPI_CHAR, 0, custom_comm);
   if (rank == 0) {
     t2 = MPI_Wtime();
     printf("Gather in %f\n", t2 - t1);
@@ -151,10 +153,11 @@ int main(int argc, char *argv[]) {
       }
       printf("\n");
     }
-  }*/
+  }
 
   int diag_number = ((rank + 1) * (ARRAY_SIZE + ARRAY_SIZE) / size) - 1;
   int length = (ARRAY_SIZE + ARRAY_SIZE) / size;
+  */
 
   // Compute Merge Path
   int path[ARRAY_SIZE * 2 - 1];
@@ -174,10 +177,6 @@ int main(int argc, char *argv[]) {
     int i = 0;
     int j = 0;
     while (index < ARRAY_SIZE * 2) {
-      if (j == ARRAY_SIZE - 1) {
-        j = 0;
-        i++;
-      }
       if (merge_matrix[i * ARRAY_SIZE + j + 1] == 0) {
         path[index] = array1[nb1];
         index++;
